@@ -1,0 +1,15 @@
+{
+  "name": "resume-job-finder",
+  "version": "1.0.0",
+  "description": "Upload your resume and find matching jobs from multiple job boards worldwide",
+  "scripts": {
+    "dev": "npx serve . -p 3000",
+    "netlify:dev": "npx netlify-cli dev",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": ["jobs", "resume", "career", "job-search"],
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}

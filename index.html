@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Upload your resume and instantly find matching jobs from LinkedIn, Indeed, Glassdoor, and more. Free, privacy-first job search powered by AI resume parsing.">
+  <meta name="keywords" content="job search, resume parser, career, job finder, employment">
+  <meta name="author" content="ResumeJobFinder">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>JobLens — AI-Powered Resume Job Finder</title>
+
+  <!-- Favicon (inline SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <!-- Mammoth.js for DOCX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Animated Background Orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+  </div>
+
+  <div class="app-wrapper">
+    <!-- ===== HEADER ===== -->
+    <header class="app-header">
+      <div class="container">
+        <div class="header-content">
+          <a href="#" class="logo" id="logo-link">
+            <div class="logo-icon">🔍</div>
+            <span class="logo-text">JobLens</span>
+          </a>
+          <div class="header-stats">
+            <div class="stat-badge" id="api-status-badge">
+              <span class="stat-dot"></span>
+              <span id="api-status-text">Limited (No API Key)</span>
+            </div>
+            <button class="stat-badge" id="bookmarks-toggle" aria-label="View bookmarked jobs">
+              ⭐ <span id="bookmarks-count">0</span> Saved
+            </button>
+            <button class="stat-badge" id="api-key-btn" aria-label="Configure API key">
+              ⚙️ Settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ===== HERO + UPLOAD ===== -->
+      <section class="hero-section" id="hero-section">
+        <div class="container">
+          <div class="hero-badge">
+            <span class="badge-icon">✨</span>
+            <span>AI-Powered Job Matching</span>
+          </div>
+          <h1 class="hero-title">
+            Find Your Dream Job<br>
+            <span class="gradient-text">With Your Resume</span>
+          </h1>
+          <p class="hero-subtitle">
+            Upload your resume and we'll instantly match you with active job listings from LinkedIn, Indeed, Glassdoor, and more — all in one place.
+          </p>
+
+          <!-- Upload Zone -->
+          <div class="upload-section" id="upload-section">
+            <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Upload your resume">
+              <div class="upload-zone-content">
+                <div class="upload-icon">📄</div>
+                <h2 class="upload-title">Drop your resume here</h2>
+                <p class="upload-subtitle">or click to browse your files</p>
+                <div class="upload-formats">
+                  <span class="format-tag">PDF</span>
+                  <span class="format-tag">DOCX</span>
+                </div>
+              </div>
+              <input type="file" class="upload-input" id="file-input" accept=".pdf,.docx" aria-label="Choose resume file">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PROCESSING STATE ===== -->
+      <section class="processing-section" id="processing-section">
+        <div class="container">
+          <div class="processing-card">
+            <div class="processing-spinner"></div>
+            <h2 class="processing-title">Analyzing Your Resume</h2>
+            <p class="processing-subtitle">We're extracting your skills and experience...</p>
+            <div class="processing-steps">
+              <div class="processing-step" id="step-extract" data-step="extract">
+                <div class="step-icon pending">📄</div>
+                <span>Extracting text from document</span>
+              </div>
+              <div class="processing-step" id="step-skills" data-step="skills">
+                <div class="step-icon pending">🧠</div>
+                <span>Identifying skills & keywords</span>
+              </div>
+              <div class="processing-step" id="step-country" data-step="country">
+                <div class="step-icon pending">🌍</div>
+                <span>Detecting location & country</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== RESUME RESULTS PANEL ===== -->
+      <section class="resume-results-section" id="resume-results-section">
+        <div class="container">
+          <div class="resume-panel">
+            <div class="resume-panel-header">
+              <div class="resume-panel-title">
+                <span class="icon">📋</span>
+                <span>Resume Analysis</span>
+              </div>
+              <button class="btn-change-resume" id="btn-change-resume">↻ Upload New</button>
+            </div>
+
+            <!-- Extracted Skills -->
+            <div class="skills-section" id="tech-skills-section">
+              <div class="skills-label">🛠 Technical Skills</div>
+              <div class="skills-tags" id="tech-skills-tags"></div>
+            </div>
+
+            <div class="skills-section" id="job-titles-section">
+              <div class="skills-label">💼 Job Titles</div>
+              <div class="skills-tags" id="job-titles-tags"></div>
+            </div>
+
+            <div class="skills-section" id="soft-skills-section">
+              <div class="skills-label">🤝 Soft Skills</div>
+              <div class="skills-tags" id="soft-skills-tags"></div>
+            </div>
+
+            <!-- Location Selector -->
+            <div class="location-selector">
+              <div class="location-group">
+                <label for="country-select">🌍 Country:</label>
+                <select class="country-select" id="country-select">
+                  <option value="">-- Select Country --</option>
+                  <option value="us">🇺🇸 United States</option>
+                  <option value="gb">🇬🇧 United Kingdom</option>
+                  <option value="ca">🇨🇦 Canada</option>
+                  <option value="au">🇦🇺 Australia</option>
+                  <option value="in">🇮🇳 India</option>
+                  <option value="de">🇩🇪 Germany</option>
+                  <option value="fr">🇫🇷 France</option>
+                  <option value="nl">🇳🇱 Netherlands</option>
+                  <option value="sg">🇸🇬 Singapore</option>
+                  <option value="nz">🇳🇿 New Zealand</option>
+                  <option value="za">🇿🇦 South Africa</option>
+                  <option value="br">🇧🇷 Brazil</option>
+                  <option value="pl">🇵🇱 Poland</option>
+                  <option value="at">🇦🇹 Austria</option>
+                  <option value="ie">🇮🇪 Ireland</option>
+                </select>
+              </div>
+              <div class="location-group">
+                <label for="city-input">🏙️ City (Optional):</label>
+                <input type="text" class="city-input" id="city-input" placeholder="e.g. New York, London">
+              </div>
+            </div>
+
+            <!-- External Job Boards (Deep Links) -->
+            <div class="external-links-section" id="external-links-section" style="display: none;">
+              <h3>🚀 Search Directly on Popular Job Boards</h3>
+              <p>We've prepared smart links with your skills and location pre-filled. Click to search instantly!</p>
+              <div class="external-links-grid" id="external-links-grid">
+                <!-- Smart links injected via JS -->
+              </div>
+            </div>
+
+            <!-- Header with Results Count & Filter -->
+            <div class="search-actions">
+              <button class="btn-search" id="btn-search" disabled>
+                <span class="btn-icon">🔍</span>
+                Search Jobs
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== JOB RESULTS ===== -->
+      <section class="results-section" id="results-section">
+        <div class="container">
+          <!-- Results Header -->
+          <div class="results-header">
+            <div>
+              <div class="results-count">
+                <span class="count-number" id="results-count-number">0</span> Jobs Found
+              </div>
+              <div class="results-source" id="results-source">
+                Aggregated from multiple job boards
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="filters-bar" id="filters-bar">
+            <button class="filter-btn active" data-filter="all">All Jobs</button>
+            <button class="filter-btn" data-filter="fulltime">Full-time</button>
+            <button class="filter-btn" data-filter="parttime">Part-time</button>
+            <button class="filter-btn" data-filter="contract">Contract</button>
+            <button class="filter-btn" data-filter="remote">Remote</button>
+            <select class="filter-select" id="sort-select">
+              <option value="relevance">Sort: Relevance</option>
+              <option value="date">Sort: Most Recent</option>
+              <option value="salary">Sort: Salary</option>
+            </select>
+          </div>
+
+          <!-- Job Cards -->
+          <div class="jobs-grid" id="jobs-grid">
+            <!-- Cards rendered by JS -->
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination" id="pagination">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== BOOKMARKS ===== -->
+      <section class="bookmarks-section" id="bookmarks-section">
+        <div class="container">
+          <div class="results-header">
+            <div>
+              <div class="results-count">
+                ⭐ <span class="count-number" id="bookmarks-count-display">0</span> Saved Jobs
+              </div>
+              <div class="results-source">Your bookmarked positions</div>
+            </div>
+            <button class="filter-btn" id="btn-back-to-results">← Back to Results</button>
+          </div>
+          <div class="jobs-grid" id="bookmarks-grid">
+            <!-- Bookmarked cards rendered by JS -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="app-footer">
+      <div class="container">
+        <p class="footer-text">
+          Built with ❤️ — Resume parsing stays in your browser. Job searches go through this site’s API proxy.
+          Powered by <a href="https://rapidapi.com" target="_blank" rel="noopener">JSearch</a> &amp; <a href="https://arbeitnow.com" target="_blank" rel="noopener">Arbeitnow</a>.
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ===== API KEY MODAL ===== -->
+  <div class="modal-overlay" id="api-key-modal" role="dialog" aria-modal="true" aria-labelledby="api-modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="api-modal-title">⚙️ API Settings</h3>
+        <button class="modal-close" id="modal-close" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>
+          To search jobs from LinkedIn, Indeed, Glassdoor, and more, you need a free
+          <a href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch" target="_blank" rel="noopener">JSearch API key</a>
+          from RapidAPI. No credit card required — the free plan includes 200 requests/month.
+        </p>
+        <p>
+          <strong>How to get your JSearch key:</strong><br>
+          1. Sign up at <a href="https://rapidapi.com" target="_blank" rel="noopener">RapidAPI.com</a><br>
+          2. Subscribe to <a href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch" target="_blank" rel="noopener">JSearch API</a> (free plan)<br>
+          3. Copy your API key from the dashboard
+        </p>
+        <div class="input-group" style="margin-bottom: 1.5rem;">
+          <label for="api-key-input">JSearch API Key</label>
+          <input type="password" id="api-key-input" placeholder="Enter your X-RapidAPI-Key">
+        </div>
+        
+        <h3>Adzuna API (Optional)</h3>
+        <p>
+          Get free credentials from the <a href="https://developer.adzuna.com/" target="_blank" rel="noopener">Adzuna Developer Portal</a> for more Australian jobs.
+        </p>
+        <div class="input-group">
+          <label for="adzuna-id-input">Adzuna App ID</label>
+          <input type="text" id="adzuna-id-input" placeholder="Enter Adzuna App ID">
+        </div>
+        <div class="input-group" style="margin-top: 0.5rem;">
+          <label for="adzuna-key-input">Adzuna App Key</label>
+          <input type="password" id="adzuna-key-input" placeholder="Enter Adzuna App Key">
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-tertiary);">
+          🔒 Keys you enter are stored in this browser. Job API requests are sent through this site’s proxy (or your Netlify env keys). Arbeitnow works without a key.
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-secondary" id="btn-skip-key">Skip (Arbeitnow only)</button>
+        <button class="btn-modal-primary" id="btn-save-key">Save Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/skillsDatabase.js"></script>
+  <script src="js/resumeParser.js"></script>
+  <script src="js/jobSearch.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
